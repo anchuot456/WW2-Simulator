@@ -5,15 +5,10 @@ using UnityEngine;
 public class ArmyController : MonoBehaviour
 {
     public static ArmyController instance;
-    public static string myLayer;
     public List<GameObject> armies;
     public List<GameObject> PlayerAArmies;
     public List<GameObject> PlayerBArmies;
     // Start is called before the first frame update
-    private void Awake()
-    {
-        myLayer = "PlayerA";
-    }
     void Start()
     {
 

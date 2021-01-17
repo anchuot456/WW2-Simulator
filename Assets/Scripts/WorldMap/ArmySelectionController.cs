@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿using Mirror;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ArmySelectionController : MonoBehaviour
+public class ArmySelectionController : NetworkBehaviour
 {
     // Start is called before the first frame update
     public GameObject background;
@@ -10,6 +11,9 @@ public class ArmySelectionController : MonoBehaviour
     public static Vector3 anchorPoint;
 
     [SerializeField] private List<GameObject> selectedUnits;
+
+    [SyncVar] public string myLayer;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -22,6 +26,13 @@ public class ArmySelectionController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //Tìm localplayer
+        var players = GameObject.FindGameObjectsWithTag("Player");
+        foreach(var player in players)
+        {
+            if (!player.GetComponent<ArmySelectionController>().isLocalPlayer) { player.SetActive(false); }
+        }
+
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
         if (Input.GetMouseButtonDown(0))
@@ -34,7 +45,7 @@ public class ArmySelectionController : MonoBehaviour
             if (hit.collider != null)
             {
                 Debug.Log(hit.collider.gameObject.name);
-                if (hit.collider.tag == "Army" && hit.collider.gameObject.layer == LayerMask.NameToLayer(ArmyController.myLayer))
+                if (hit.collider.tag == "Army" && hit.collider.gameObject.layer == LayerMask.NameToLayer(myLayer))
                 {
                     selectedUnits.Add(hit.collider.gameObject);
                 }
@@ -72,4 +83,28 @@ public class ArmySelectionController : MonoBehaviour
         position.y = point.y * backgroundSize.y / 4 + backgroundSize.y / 8 + anchorPoint.y;
         return position;
     }
+
+    #region Server
+    [Server]
+    public void setLayer(string layer)
+    {
+        myLayer = layer;
+    }
+
+    public override void OnStartServer()
+    {
+        if (connectionToClient.connectionId == 0)
+        {
+            setLayer("PlayerA");
+        }
+        else
+        {
+            setLayer("PlayerB");
+        }
+    }
+    #endregion
+
+    #region Client
+
+    #endregion
 }

@@ -1,15 +1,18 @@
-﻿using System.Collections;
+﻿using Mirror;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CreateArmy : MonoBehaviour
+public class CreateArmy : NetworkBehaviour
 {
     public InputField soldierField;
     public InputField tankField;
 
     public GameObject playerAArmy;
     public GameObject playerBArmy;
+
+    public ArmySelectionController player;
 
     private Vector2 spawnPos;
 
@@ -18,7 +21,17 @@ public class CreateArmy : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (ArmyController.myLayer == "PlayerA")
+        var players = GameObject.FindGameObjectsWithTag("Player");
+        foreach(var index in players)
+        {
+            if (index.GetComponent<ArmySelectionController>().isLocalPlayer)
+            {
+                player = index.GetComponent<ArmySelectionController>();
+                break;
+            }
+        }
+
+        if (player.myLayer == "PlayerA")
         {
             spawnPos = new Vector2(0, 3);
         }

@@ -1,9 +1,10 @@
-﻿using System.Collections;
+﻿using Mirror;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class LoadScene : MonoBehaviour
+public class LoadScene : NetworkBehaviour
 {
     [SerializeField] private GameObject[] armies;
     [SerializeField] private GameObject soldierA;

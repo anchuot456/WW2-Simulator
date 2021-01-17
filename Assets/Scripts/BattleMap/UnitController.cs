@@ -11,7 +11,16 @@ public class UnitController : MonoBehaviour
     // Start is called before the first frame update
     private void Awake()
     {
-        myLayer = "PlayerA";
+        //Tìm localplayer
+        var players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (var player in players)
+        {
+            if (player.GetComponent<ArmySelectionController>().isLocalPlayer)
+            {
+                myLayer = player.GetComponent<ArmySelectionController>().myLayer;
+            }
+
+        }
     }
     void Start()
     {
