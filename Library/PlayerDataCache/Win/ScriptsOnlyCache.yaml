@@ -2069,7 +2069,7 @@ ScriptsOnlyBuild:
     className: MonsterMovement
   - hash:
       serializedVersion: 2
-      Hash: a3c8a9980c497ca1ecb6c02b0b0c1b35
+      Hash: 73e9d51a9db719c52583a91a467ff40d
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: ArmyController

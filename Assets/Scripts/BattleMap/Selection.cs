@@ -1,8 +1,10 @@
-﻿using System.Collections;
+﻿using Mirror;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Selection : MonoBehaviour
+public class Selection : NetworkBehaviour
 {
 
 
@@ -10,7 +12,7 @@ public class Selection : MonoBehaviour
     private Vector3 unitSize;
 
     public UnitController list;
-    private List<GameObject> selectedUnits;
+    
 
     public GameObject playerZone;
 
@@ -19,32 +21,38 @@ public class Selection : MonoBehaviour
     private bool isDragged;
     private Vector3 startPos;
 
+    [SyncVar]
+    public List<GameObject> selectedUnits;
+
+    private static event Action<Vector2> OnClick;
+
     // Start is called before the first frame update
     void Start()
     {
         selectedUnits = new List<GameObject>();
         unitSize = unit.GetComponent<Renderer>().bounds.size;
+
+        list = GameObject.Find("UnitController").GetComponent<UnitController>();
+        playerZone = GameObject.Find("PlayerAZone");
+        selectionBox = GameObject.Find("Canvas").transform.GetChild(0).GetComponent<RectTransform>();
+
+
+        OnClick += OnPlayerClick;
     }
-
-    // Update is called once per frame
-    void Update()
+    public void ChooseUnit(Vector2 mousePos2D)
     {
-
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
-        //Nhấp chuột trái
         if (Input.GetMouseButtonDown(0))
         {
             //Bỏ chọn unit cũ
             selectedUnits.Clear();
-            
+
             //Selection Box
             startPos = Input.mousePosition;
         }
         //Kéo chuột trái
         else if (Input.GetMouseButton(0))
         {
-            if((Input.mousePosition - startPos).magnitude > 40)
+            if ((Input.mousePosition - startPos).magnitude > 40)
             {
                 isDragged = true;
                 if (!selectionBox.gameObject.activeInHierarchy)
@@ -55,12 +63,12 @@ public class Selection : MonoBehaviour
                 selectionBox.sizeDelta = new Vector3(Mathf.Abs(width), Mathf.Abs(height));
                 selectionBox.anchoredPosition = startPos + new Vector3(width / 2, height / 2);
             }
-            
+
         }
         //Thả chuột trái
         else if (Input.GetMouseButtonUp(0))
         {
-            
+
             if (isDragged == false)
             {
                 RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
@@ -97,10 +105,13 @@ public class Selection : MonoBehaviour
                 isDragged = false;
             }
         }
+    }
+    public void OnPlayerClick(Vector2 mousePos2D)
+    {
         //Nhấp chuột phải
-        else if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(1))
         {
-            
+
             RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
             if (hit.collider != null)
             {
@@ -110,7 +121,7 @@ public class Selection : MonoBehaviour
                     foreach (var unit in selectedUnits)
                     {
                         // Nếu còn thời gian set quân đầu trận
-                        if (playerZone != null) 
+                        if (playerZone != null)
                         {
                             Debug.Log(clickPos);
                             Vector2 min = playerZone.transform.position - (playerZone.GetComponent<Renderer>().bounds.size / 2);
@@ -126,11 +137,11 @@ public class Selection : MonoBehaviour
                                 //set tham số
                                 var index = selectedUnits.IndexOf(unit);
                                 unit.transform.position = clickPos + (index) * unitSize.x * 1.1f * new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0);
-                                unit.GetComponent<Movement>().Move(clickPos + (index) * unitSize.x * 1.1f * new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0), direction);
+                                unit.GetComponent<Movement>().Move(clickPos + (index) * unitSize.x * 1.1f * new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0), direction, unit.GetComponent<Movement>().netId);
                                 var _lookRotation = Quaternion.LookRotation(Vector3.forward, direction);
                                 unit.transform.rotation = _lookRotation;
                             }
-                            
+
                         }
                         else //Hết thời gian set quân
                         {
@@ -141,11 +152,43 @@ public class Selection : MonoBehaviour
 
                             //set tham số
                             var index = selectedUnits.IndexOf(unit);
-                            unit.GetComponent<Movement>().Move(clickPos + (index) * unitSize.x * 1.1f * new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0), direction);
+                            unit.GetComponent<Movement>().Move(clickPos + (index) * unitSize.x * 1.1f * new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0), direction, unit.GetComponent<Movement>().netId);
                         }
                     }
                 }
             }
         }
     }
+
+    #region Client
+    [ClientCallback]
+    void Update()
+    {
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
+        ChooseUnit(mousePos2D);
+        Control(mousePos2D);
+    }
+
+    [Client]
+
+    public void Control(Vector2 mousePos2D)
+    {
+        
+        CmdControl(mousePos2D);
+    }
+    [Command(ignoreAuthority = true)]
+    public void CmdControl(Vector2 mousePos2D)
+    {
+        RpcControl(mousePos2D);
+    }
+    #endregion
+
+    #region Server
+    [ClientRpc]
+    public void RpcControl(Vector2 mousePos2D)
+    {
+        OnClick?.Invoke(mousePos2D);
+    }
+    #endregion
 }

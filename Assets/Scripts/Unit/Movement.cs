@@ -1,24 +1,39 @@
-﻿using System.Collections;
+﻿using Mirror;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Movement : MonoBehaviour
+public class Movement : NetworkBehaviour
 {
     public float speed = 5f;
     public float rotationSpeed = 10f;
 
     Rigidbody2D rb;
 
-    Vector3 destination;
-    Vector3 direction;
+    [SyncVar]
+    public Vector3 destination;
+    [SyncVar]
+    public Vector3 direction;
+
+    private static event Action<Vector2, Vector2, uint> OnDestinationChanged;
     // Start is called before the first frame update
     void Start()
     {
         destination = transform.position;
         rb = gameObject.GetComponent<Rigidbody2D>();
+
+        OnDestinationChanged += HandleNewDestination;
+    }
+
+    public void HandleNewDestination(Vector2 position, Vector2 direction, uint netID)
+    {
+        destination = position;
+        this.direction = direction;
     }
 
     // Update is called once per frame
+    [ClientCallback]
     void Update()
     {
         if (transform.position != destination)
@@ -34,14 +49,22 @@ public class Movement : MonoBehaviour
             
             //di chuyển
             transform.position = Vector2.MoveTowards(transform.position, destination, speed * Time.deltaTime);
-            //rb.velocity = _direction * speed * Time.deltaTime;
-            //transform.Translate((_direction) * speed * Time.deltaTime);
         }
     }
 
-    public void Move(Vector2 position,Vector2 direction)
+    [Client]
+    public void Move(Vector2 position,Vector2 direction, uint netID)
     {
-        destination = position;
-        this.direction = direction;
+        CmdMove(position, direction, netID);
+    }
+    [Command(ignoreAuthority = true)]
+    public void CmdMove(Vector2 position, Vector2 direction, uint netID)
+    {
+        RpcMove(position, direction, netID);
+    }
+    [ClientRpc]
+    public void RpcMove(Vector2 position, Vector2 direction, uint netID)
+    {
+        OnDestinationChanged?.Invoke(position, direction, netID);
     }
 }

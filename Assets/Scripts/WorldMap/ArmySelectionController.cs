@@ -25,6 +25,8 @@ public class ArmySelectionController : NetworkBehaviour
 
         selectedUnits = new List<GameObject>();
         OnClick += OnPlayerClick;
+
+        DontDestroyOnLoad(gameObject);
     }
 
     // Update is called once per frame
@@ -77,7 +79,8 @@ public class ArmySelectionController : NetworkBehaviour
     {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
-        CmdControl(mousePos2D);
+        //CmdControl(mousePos2D);
+        OnClick?.Invoke(mousePos2D);
     }
     [Command]
     public void CmdControl(Vector2 mousePos2D)
@@ -127,7 +130,7 @@ public class ArmySelectionController : NetworkBehaviour
                 {
                     //set tham số
                     var index = selectedUnits.IndexOf(unit);
-                    unit.GetComponent<ArmyMovement>().Move(position, point);
+                    unit.GetComponent<ArmyMovement>().Move(position, point, unit.GetComponent<ArmyMovement>().netId);
                 }
             }
         }

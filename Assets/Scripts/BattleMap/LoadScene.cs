@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class LoadScene : NetworkBehaviour
 {
+    [SerializeField] private GameObject selection;
     [SerializeField] private GameObject[] armies;
     [SerializeField] private GameObject soldierA;
     [SerializeField] private GameObject soldierB;
@@ -16,6 +17,9 @@ public class LoadScene : NetworkBehaviour
     public ArmyDetail playerBDetail;
     private void Awake()
     {
+        var selectionController = Instantiate(selection);
+        NetworkServer.Spawn(selectionController);
+
         var unitSize = soldierA.GetComponent<Renderer>().bounds.size;
         var list = GameObject.Find("UnitController").GetComponent<UnitController>();
         armies = GameObject.FindGameObjectsWithTag("Army");
@@ -38,15 +42,15 @@ public class LoadScene : NetworkBehaviour
         {
             var pos = startPosA.position + (i- playerADetail.soldiers) * unitSize.x * 1.1f * new Vector3(0, 1, 0);
             var unit = Instantiate(soldierA, pos, Quaternion.LookRotation(Vector3.forward, Vector3.right));
-            //NetworkServer.Spawn()
-
             unit.GetComponent<Attack>().setList(list);
+            NetworkServer.Spawn(unit);
         }
         for (int i = 0; i < playerADetail.tanks; i++)
         {
             var pos = startPosA.position + (i - playerADetail.tanks) * unitSize.x * 1.1f * new Vector3(-1, 1, 0);
             var unit = Instantiate(soldierA, pos, Quaternion.LookRotation(Vector3.forward, Vector3.right));
             unit.GetComponent<Attack>().setList(list);
+            NetworkServer.Spawn(unit);
         }
         //PlayerB
         for (int i = 0; i < playerBDetail.soldiers; i++)
@@ -54,12 +58,14 @@ public class LoadScene : NetworkBehaviour
             var pos = startPosB.position + (i - playerBDetail.soldiers) * unitSize.x * 1.1f * new Vector3(0, 1, 0);
             var unit = Instantiate(soldierB, pos, Quaternion.LookRotation(Vector3.forward, Vector3.right));
             unit.GetComponent<Attack>().setList(list);
+            NetworkServer.Spawn(unit);
         }
         for (int i = 0; i < playerBDetail.tanks; i++)
         {
             var pos = startPosB.position + (i - playerBDetail.tanks) * unitSize.x * 1.1f * new Vector3(-1, 1, 0);
             var unit = Instantiate(soldierB, pos, Quaternion.LookRotation(Vector3.forward, Vector3.right));
             unit.GetComponent<Attack>().setList(list);
+            NetworkServer.Spawn(unit);
         }
     }
     private void Update()

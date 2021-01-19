@@ -176,7 +176,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83139a8eee8c770419e3ea902988eb90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soldiers: 0
+  soldiers: 5
   tanks: 0
   status: 0
 --- !u!114 &-456651017664113192

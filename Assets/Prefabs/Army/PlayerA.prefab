@@ -147,6 +147,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c0d33610b756654db82e1f76f6c53ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
   speed: 5
   background: {fileID: 7410020789601258800, guid: fef39ba0d2764104280a68bb259e38c6,
     type: 3}
@@ -174,7 +176,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83139a8eee8c770419e3ea902988eb90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soldiers: 0
+  soldiers: 5
   tanks: 0
   status: 0
 --- !u!114 &6809891029111553334

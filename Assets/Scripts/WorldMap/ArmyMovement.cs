@@ -19,7 +19,7 @@ public class ArmyMovement : NetworkBehaviour
     [SyncVar]
     private Vector2 position;
 
-    private static event Action<Vector3,Vector2> OnDestinationChanged;
+    private static event Action<Vector3,Vector2,uint> OnDestinationChanged;
 
     // Start is called before the first frame update
     void Start()
@@ -33,14 +33,19 @@ public class ArmyMovement : NetworkBehaviour
         OnDestinationChanged += HandleNewDestination;
     }
 
-    public void HandleNewDestination(Vector3 point,Vector2 position)
+    public void HandleNewDestination(Vector3 point,Vector2 position,uint netID)
     {
-        Debug.Log("set position OK");
-        destination = position;
-        position.x = point.x;
-        position.y = point.y;
-        this.point = point;
-        Debug.Log(destination);
+        if (netId == netID)
+        {
+            Debug.Log(netId);
+            Debug.Log("set position OK");
+            destination = position;
+            position.x = point.x;
+            position.y = point.y;
+            this.point = point;
+            Debug.Log(destination);
+        }
+        
     }
     [ClientCallback]
     void Update()
@@ -55,22 +60,23 @@ public class ArmyMovement : NetworkBehaviour
     }
 
     [Client]
-    public void Move(Vector2 position, Vector3 point)
+    public void Move(Vector2 position, Vector3 point,uint netID)
     {
         Debug.Log("client OK");
-        CmdMove(position, point);
+        Debug.Log(netId);
+        CmdMove(position, point, netID);
     }
     [Command]
-    public void CmdMove(Vector2 position,Vector3 point)
+    public void CmdMove(Vector2 position,Vector3 point, uint netID)
     {
         Debug.Log("CMD OK");
-        RpcMove(position, point);
+        RpcMove(position, point, netID);
     }
     [ClientRpc]
-    public void RpcMove(Vector2 position,Vector3 point)
+    public void RpcMove(Vector2 position,Vector3 point, uint netID)
     {
         Debug.Log("RPC OK");
-        OnDestinationChanged?.Invoke(point,position);
+        OnDestinationChanged?.Invoke(point,position,netID);
         
     }
 

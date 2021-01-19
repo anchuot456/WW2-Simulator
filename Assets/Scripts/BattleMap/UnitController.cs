@@ -8,22 +8,21 @@ public class UnitController : MonoBehaviour
     public List<GameObject> units;
     public List<GameObject> PlayerAUnits;
     public List<GameObject> PlayerBUnits;
+    public GameObject[] players;
     // Start is called before the first frame update
-    private void Awake()
+    void Start()
     {
         //Tìm localplayer
-        var players = GameObject.FindGameObjectsWithTag("Player");
+        players = GameObject.FindGameObjectsWithTag("Player");
         foreach (var player in players)
         {
             if (player.GetComponent<ArmySelectionController>().isLocalPlayer)
             {
                 myLayer = player.GetComponent<ArmySelectionController>().myLayer;
             }
-
+            Debug.Log(myLayer);
         }
-    }
-    void Start()
-    {
+
         units = new List<GameObject>(GameObject.FindGameObjectsWithTag("Unit"));
         foreach (var unit in units)
         {
