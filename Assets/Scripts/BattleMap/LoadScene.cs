@@ -38,6 +38,8 @@ public class LoadScene : NetworkBehaviour
         {
             var pos = startPosA.position + (i- playerADetail.soldiers) * unitSize.x * 1.1f * new Vector3(0, 1, 0);
             var unit = Instantiate(soldierA, pos, Quaternion.LookRotation(Vector3.forward, Vector3.right));
+            //NetworkServer.Spawn()
+
             unit.GetComponent<Attack>().setList(list);
         }
         for (int i = 0; i < playerADetail.tanks; i++)

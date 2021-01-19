@@ -1,18 +1,26 @@
-﻿using System.Collections;
+﻿using Mirror;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ArmyMovement : MonoBehaviour
+public class ArmyMovement : NetworkBehaviour
 {
     public float speed = 5f;
 
-    private Vector2 position;
+    
     [SerializeField] private GameObject background;
     private Vector3 backgroundSize;
     private Vector3 anchorPoint;
     private Vector2 point;
 
+    [SyncVar]
     private Vector3 destination;
+    [SyncVar]
+    private Vector2 position;
+
+    private static event Action<Vector3,Vector2> OnDestinationChanged;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -21,9 +29,20 @@ public class ArmyMovement : MonoBehaviour
         backgroundSize = background.GetComponent<Renderer>().bounds.size;
         anchorPoint = background.gameObject.transform.position - backgroundSize / 2;
         point = ArmySelectionController.getPoint(transform.position);
+
+        OnDestinationChanged += HandleNewDestination;
     }
 
-    // Update is called once per frame
+    public void HandleNewDestination(Vector3 point,Vector2 position)
+    {
+        Debug.Log("set position OK");
+        destination = position;
+        position.x = point.x;
+        position.y = point.y;
+        this.point = point;
+        Debug.Log(destination);
+    }
+    [ClientCallback]
     void Update()
     {
         if (transform.position != destination)
@@ -35,12 +54,24 @@ public class ArmyMovement : MonoBehaviour
         transform.rotation = _lookRotation;
     }
 
-    public void Move(Vector2 position,Vector3 point)
+    [Client]
+    public void Move(Vector2 position, Vector3 point)
     {
-        destination = position;
-        position.x = point.x;
-        position.y = point.y;
-        this.point = point;
+        Debug.Log("client OK");
+        CmdMove(position, point);
+    }
+    [Command]
+    public void CmdMove(Vector2 position,Vector3 point)
+    {
+        Debug.Log("CMD OK");
+        RpcMove(position, point);
+    }
+    [ClientRpc]
+    public void RpcMove(Vector2 position,Vector3 point)
+    {
+        Debug.Log("RPC OK");
+        OnDestinationChanged?.Invoke(point,position);
+        
     }
 
 }
